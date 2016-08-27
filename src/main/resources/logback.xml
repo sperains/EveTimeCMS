@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true" >
+    <property resource="var.properties" />
+    <contextName>myAppName</contextName>
+    <property name="MyApp" value="EveTimeCMS" />
+    <!--<timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>-->
+    <appender name="DebugAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>../logs/${MyApps}/debug/debug.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--<fileNamePattern>logs/debug/debug.log-%d{yyyy-MM-dd}.log</fileNamePattern>-->
+            <!--输出到yyyy/MM文件夹下的myapplication.log文件-->
+            <fileNamePattern>../logs/${MyApp}/debug/%d{yyyy/MM, aux}/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n
+                <!--%d{yyyy-MM-dd HH:mm:ss} [%level] - %msg%n
+                Logger: %logger
+                Class: %class
+                File: %file
+                Caller: %caller
+                Line: %line
+                Message: %m
+                Method: %M
+                Relative: %relative
+                Thread: %thread
+                Exception: %ex
+                xException: %xEx
+                nopException: %nopex
+                rException: %rEx
+                Marker: %marker
+                %n-->
+
+            </pattern>
+
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="errorAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <file>../logs/${MyApp}/error/error.log</file>
+            <fileNamePattern>../logs/${MyApp}/error/%d{yyyy/MM, aux}/%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%n%n%n %d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>error</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+
+    <logger name="com.evetime" additivity="false">
+        <level value="DEBUG" />
+        <appender-ref ref="DebugAppender"/>
+        <appender-ref ref="errorAppender" />
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+
+
+
+</configuration>
+
