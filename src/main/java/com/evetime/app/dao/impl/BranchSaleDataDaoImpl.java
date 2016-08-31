@@ -27,7 +27,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     public int queryTodayOrderCount(String cloudId) {
         String sql =  " SELECT count(*) from ms_pc_orderinfo " +
                             " WHERE CloudId = ? " +
-                            " AND OrderStatusId = 0 " +
+                            " AND OrderStatusId = 1 " +
                             " AND DATE(OrderTime) = Date(NOW())" ;
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , int.class );
     }
@@ -36,7 +36,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     public int queryYesterdayOrderCount(String cloudId) {
         String sql =  " SELECT count(*) from ms_pc_orderinfo " +
                             " WHERE CloudId = ? " +
-                            " AND OrderStatusId = 0 " +
+                            " AND OrderStatusId = 1 " +
                             " AND TO_DAYS(now()) - TO_DAYS(OrderTime) = 1 " ;
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , int.class );
     }
@@ -47,7 +47,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
         String sql =  " SELECT IFNULL(SUM(a.FoodCount),0) FROM ms_pc_orderdetailsinfo a " +
                             " JOIN ms_pc_orderinfo b ON a.OrderId = b.Id " +
                             " WHERE a.CloudId = ? " +
-                            " AND b.OrderStatusId = 0 " +
+                            " AND b.OrderStatusId = 1 " +
                             " AND DATE(b.OrderTime) = Date(NOW())";
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , int.class);
     }
@@ -58,7 +58,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
         String sql =  " SELECT IFNULL(SUM(a.FoodCount),0) FROM ms_pc_orderdetailsinfo a " +
                             " JOIN ms_pc_orderinfo b ON a.OrderId = b.Id " +
                             " WHERE a.CloudId = ? " +
-                            " AND b.OrderStatusId = 0 " +
+                            " AND b.OrderStatusId = 1 " +
                             " AND TO_DAYS(now()) - TO_DAYS(OrderTime) = 1 ";
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , int.class);
     }
@@ -70,7 +70,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
                             "JOIN ms_pc_orderinfo b " +
                             "ON a.OrderId = b.Id " +
                             "WHERE a.CloudId = ? " +
-                            "AND b.OrderStatusId = 0 " +
+                            "AND b.OrderStatusId = 1 " +
                             "AND DATE(b.OrderTime) = Date(NOW())" ;
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , double.class);
     }
@@ -82,7 +82,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
                 "JOIN ms_pc_orderinfo b " +
                 "ON a.OrderId = b.Id " +
                 "WHERE a.CloudId = ? " +
-                "AND b.OrderStatusId = 0 " +
+                "AND b.OrderStatusId = 1 " +
                 "AND TO_DAYS(now()) - TO_DAYS(OrderTime) = 1 " ;
         return jdbcTemplate.queryForObject(sql , new Object[]{cloudId} , double.class);
     }
@@ -99,7 +99,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " select ROUND(a.count/b.count*100,1) tableTurnoverRate from ( " +
                             " SELECT COUNT(*)  count ,DATE_FORMAT(OrderTime,'%y-%m-%d'),CloudId FROM ms_pc_orderinfo WHERE  " +
-                            " TO_DAYS(OrderTime) = TO_DAYS(NOW()) AND OrderStatusId = 0 " +
+                            " TO_DAYS(OrderTime) = TO_DAYS(NOW()) AND OrderStatusId = 1 " +
                             " GROUP BY CloudId , DATE_FORMAT(OrderTime,'%y-%m-%d') " +
                             " ) a JOIN ( " +
                             " select count(*) count , CloudId from ms_pc_tableinfo WHERE DelFlag = 0 GROUP BY CloudId " +
@@ -113,7 +113,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " select ROUND(a.count/b.count*100,1) tableTurnoverRate  from ( " +
                             " SELECT COUNT(*) count ,DATE_FORMAT(OrderTime,'%y-%m-%d'),CloudId FROM ms_pc_orderinfo WHERE  " +
-                            " TO_DAYS(NOW()) - TO_DAYS(OrderTime) = 1 AND  OrderStatusId = 0" +
+                            " TO_DAYS(NOW()) - TO_DAYS(OrderTime) = 1 AND  OrderStatusId = 1 " +
                             " GROUP BY CloudId , DATE_FORMAT(OrderTime,'%y-%m-%d') " +
                             " ) a JOIN ( " +
                             " select count(*) count , CloudId from ms_pc_tableinfo WHERE DelFlag = 0 GROUP BY CloudId " +
@@ -127,7 +127,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT SUM(a.PayMoney) sale ,DATE_FORMAT(b.OrderTime,'%m-%d') date FROM ms_pc_orderpayinfo a " +
                             " JOIN ms_pc_orderinfo b " +
-                            " ON a.OrderId = b.Id AND b.OrderStatusId = 0 " +
+                            " ON a.OrderId = b.Id AND b.OrderStatusId = 1 " +
                             " WHERE a.CloudId = ? " +
                             " AND TO_DAYS(now()) - TO_DAYS(b.OrderTime) < 7 " +
                             " GROUP BY DATE_FORMAT(b.OrderTime,'%y-%m-%d')"  ;
@@ -148,8 +148,8 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT a.FoodName name, a.Id , d.count count FROM ms_pc_foodinfo a " +
                             " LEFT JOIN (SELECT sum(b.FoodCount) count  , b.FoodId from ms_pc_orderdetailsinfo b " +
-                            " JOIN ms_pc_orderinfo c ON b.OrderId = c.Id " +
-                            " AND c.OrderStatusId = 0 WHERE " ;
+                            " LEFT JOIN ms_pc_orderinfo c ON b.OrderId = c.Id " +
+                            " AND c.OrderStatusId = 1 WHERE " ;
         switch (range){
             case 0 ://当天
                 sql += "  DATE(c.OrderTime) = DATE(NOW()) " ;
@@ -184,7 +184,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                             " JOIN ms_pc_orderpayinfo b " +
-                            " ON a.Id = b.OrderId AND a.OrderStatusId = 0 " +
+                            " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                             " WHERE a.CloudId = ? " +
                             " AND WEEK(a.OrderTime ,1 ) = WEEK(NOW() , 1) " +
                             " GROUP BY DATE_FORMAT(a.OrderTime , '%y-%m-%d')" ;
@@ -204,7 +204,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
-                " ON a.Id = b.OrderId AND a.OrderStatusId = 0 " +
+                " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +
                 " AND MONTH (a.OrderTime) = MONTH (NOW() ) " +
                 " GROUP BY DATE_FORMAT(a.OrderTime , '%y-%m-%d')" ;
@@ -224,7 +224,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
-                " ON a.Id = b.OrderId AND a.OrderStatusId = 0 " +
+                " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +
                 " AND YEAR(a.OrderTime) = YEAR(NOW() ) " +
                 " GROUP BY DATE_FORMAT(a.OrderTime , '%y-%m')" ;
@@ -244,7 +244,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
 
         String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
-                " ON a.Id = b.OrderId AND a.OrderStatusId = 0 " +
+                " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +
                 " AND MONTH (a.OrderTime) =  ? AND YEAR(a.OrderTime) = YEAR(NOW()) " +
                 " GROUP BY DATE_FORMAT(a.OrderTime , '%y-%m-%d')" ;

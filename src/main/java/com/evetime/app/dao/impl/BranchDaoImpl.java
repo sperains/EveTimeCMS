@@ -34,7 +34,7 @@ public class BranchDaoImpl implements BranchDao{
                             " SELECT sum(b.PayMoney) todaySale, a.CloudId " +
                             " FROM ms_pc_orderinfo a " +
                             " LEFT JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId " +
-                            " WHERE a.OrderStatusId = 0 " +
+                            " WHERE a.OrderStatusId = 1 " +
                             " AND TO_DAYS(a.OrderTime) = TO_DAYS(now()) " +
                             " GROUP BY a.CloudId ) n ON m.CloudId = n.CloudId" +
                             " JOIN ms_pc_restaurantinfo r " +

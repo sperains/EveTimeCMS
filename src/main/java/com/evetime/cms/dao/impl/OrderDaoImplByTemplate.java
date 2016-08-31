@@ -83,7 +83,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                          "GROUP BY dayTime";*/
         String sql =  " select SUM(b.PayMoney) sum ,DATE_FORMAT(a.OrderTime,'%y-%m-%d') dayTime from ms_pc_orderinfo a " +
                             " JOIN ms_pc_orderpayinfo b " +
-                            " on a.Id = b.OrderId AND a.OrderStatusId = 0  " +
+                            " on a.Id = b.OrderId AND a.OrderStatusId = 1  " +
                             " WHERE DATE_FORMAT(a.OrderTime,'%Y-%m-%d') >= ? AND  DATE_FORMAT(a.OrderTime,'%Y-%m-%d') <= ? " +
                             " AND a.CloudId = ? " +
                             " GROUP BY dayTime" ;
@@ -103,7 +103,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
     public List<Map<String, String>> findMonthAmountAmount(String year , String cloudId) {
 
         String sql  = "SELECT SUM(m.PayMoney) sum,DATE_FORMAT(o.OrderTime,'%m') as month from ms_pc_orderpayinfo m " +
-                            " JOIN ms_pc_orderinfo o ON o.Id = m.OrderId AND o.OrderStatusId = 0 " +
+                            " JOIN ms_pc_orderinfo o ON o.Id = m.OrderId AND o.OrderStatusId = 1 " +
                             " WHERE DATE_FORMAT(o.OrderTime,'%Y')= ? " +
                             " AND o.CloudId = ?  "  +
                             " GROUP BY month " ;
@@ -122,7 +122,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
     @Override
     public List<Map<String, Object>> findOrderCountOfDay(String startTime, String endTime, String cloudId) {
 
-        String sql = "SELECT COUNT(*) count, COUNT(IF(OrderStatusId=0, true ,null)) finished ,DATE_FORMAT(OrderTime,'%y-%m-%d') time FROM ms_pc_orderinfo " +
+        String sql = "SELECT COUNT(*) count, COUNT(IF(OrderStatusId=1, true ,null)) finished ,DATE_FORMAT(OrderTime,'%y-%m-%d') time FROM ms_pc_orderinfo " +
 
                     "WHERE CloudId = ? " ;
 
@@ -186,7 +186,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                             " LEFT JOIN ( " +
                             " select o.CloudId ,sum(if(p.PayTypeId IN (4) ,p.PayMoney , 0)) aliPay , sum(if(p.PayTypeId = 5 ,p.PayMoney , 0)) wechatPay from ms_pc_orderinfo o " +
                             " JOIN ms_pc_orderpayinfo p ON o.Id = p.OrderId " +
-                            " WHERE o.OrderStatusId = 0 AND MONTH(o.OrderTime) = ? " +
+                            " WHERE o.OrderStatusId = 1 AND MONTH(o.OrderTime) = ? " +
                             " GROUP BY o.CloudId " +
                             " ) m ON c.CloudId = m.CloudId " +
                             " WHERE c.UserId =  ? " ;
@@ -234,7 +234,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
 
 
         String sql =  " SELECT  a.CloudId ,a.FoodId  ,a.FoodName ,SUM(a.FoodCount) sum FROM ms_pc_orderdetailsinfo a " +
-                            " JOIN ms_pc_orderinfo b ON b.Id = a.OrderId AND b.OrderStatusId = 0 " +
+                            " JOIN ms_pc_orderinfo b ON b.Id = a.OrderId AND b.OrderStatusId = 1 " +
                             "  WHERE a.CloudId = ? " +
                             "  GROUP BY a.FoodId  " +
                             "  ORDER BY sum DESC " ;
@@ -264,7 +264,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                                 " ms_pc_orderinfo " +
                                 " WHERE " +
                                 " cloudId = ? " +
-                                " AND OrderStatusId = 0 " +
+                                " AND OrderStatusId = 1 " +
                                 " AND DATE_FORMAT(OrderTime, '%Y-%m-%d') >= ?  AND DATE_FORMAT(OrderTime, '%Y-%m-%d')<= ? " +
                                 " GROUP BY " +
                                 " DATE_FORMAT(OrderTime, '%y-%m%-%d') " +
@@ -286,7 +286,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
 
         String sql = " SELECT sum(a.PayMoney) sum, sum(b.PeopleCount) count ,ROUND(sum(a.PayMoney)/sum(b.PeopleCount)) avg ,DATE_FORMAT(b.OrderTime,'%y-%m') month from ms_pc_orderpayinfo  a " +
                           " JOIN ms_pc_orderinfo b ON b.Id = a.OrderId " +
-                          " WHERE a.CloudId = ? AND b.OrderStatusId = 0 " +
+                          " WHERE a.CloudId = ? AND b.OrderStatusId = 1 " +
                           " GROUP BY DATE_FORMAT(b.OrderTime , '%y-%m') " ;
         return jdbcTemplate.query(sql, new Object[]{cloudId}, new RowMapper<Map<String, Object>>() {
             @Override
@@ -307,7 +307,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
         /*String sql =   " SELECT count(*) count , a.count  costTime from ( " +
                             " SELECT count(*) count ,CloudId , tel from ms_pc_orderinfo " +
                             " WHERE CloudId = ? " +
-                            " AND OrderStatusId = 0 " +
+                            " AND OrderStatusId = 1 " +
                             " AND DATE_FORMAT(OrderTime,'%Y-%m') = ? " +
                             " AND tel IS NOT NULL " +
                             " GROUP BY   tel ) a " +
@@ -316,7 +316,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
         String sql = " SELECT b.count / c.count * 100 percent, b.costTime FROM " +
                             "( SELECT count(*) count , a.count costTime FROM " +
                             " ( SELECT count(*) count FROM ms_pc_orderinfo WHERE CloudId = ? " +
-                            " AND OrderStatusId = 0 " +
+                            " AND OrderStatusId = 1 " +
                             " AND tel IS NOT NULL " +
                             " AND DATE_FORMAT(OrderTime, '%Y-%m') = ? " +
                             " GROUP BY " +
@@ -324,7 +324,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                             " ( SELECT count(*) count FROM " +
                             "( SELECT count(*)  FROM ms_pc_orderinfo " +
                             " WHERE CloudId = ? " +
-                            " AND OrderStatusId = 0 " +
+                            " AND OrderStatusId = 1 " +
                             " AND tel IS NOT NULL" +
                             " AND DATE_FORMAT(OrderTime, '%Y-%m') = ? " +
                             " GROUP BY tel ) a ) c ";
@@ -345,7 +345,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
         String sql =  " SELECT ROUND(b.count/a.count*100,2) tableTurnoverRate, b.dayTime  from " +
                             " (SELECT count(*) count ,CloudId from ms_pc_tableinfo where DelFlag = 0 GROUP BY CloudId) a JOIN " +
                             " (SELECT count(*) count ,DATE_FORMAT(OrderTime,'%Y-%m-%d') dayTime , CloudId from ms_pc_orderinfo " +
-                            " WHERE OrderStatusId = 0 " +
+                            " WHERE OrderStatusId = 1 " +
                             " GROUP BY CloudId ,DATE_FORMAT(OrderTime,'%Y-%m-%d') ) b ON a.CloudId = b.CloudId " +
                             " WHERE a.CloudId = ? " +
                             " AND DATE_FORMAT(b.dayTime,'%Y-%m-%d') >= ? AND DATE_FORMAT(b.dayTime,'%Y-%m-%d') <= ? " +

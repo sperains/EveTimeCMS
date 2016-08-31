@@ -81,14 +81,14 @@ public class ShopDaoImplByTemplate implements ShopDao {
                 " (SELECT c.BrandId FROM ms_web_companywithbrandinfo c " +*//*
                 " WHERE r.CompanyId = ?  " +
                 " AND r.DelFlag = 0 " ;*/
-        String sql =  " SELECT r.Id , r.CloudId , r.RestaurantName , r.BranchName , r.Address , r.Tel , r.Phone , b.Id BrandId , r.RestaurantType, " +
+        String sql =  " SELECT r.Id , r.CloudId , r.RestaurantName , r.BranchName , r.Address , r.Tel , r.Phone , b.Id BrandId , r.RestaurantType , r.CompanyId , " +
                             " b.BrandName , a.AuditStatus ,r.StartTime , r.EndTime , r.PersonPrice , LPAD(r.ProvinceId,2,'0') ProvinceId , " +
                             " LPAD(r.CityId , 3 , '0') CityId , r.DistrictId " +
                             " FROM ms_web_companyuserrole c " +
                             " LEFT JOIN ms_pc_restaurantinfo r ON c.CloudId = r.CloudId " +
                             " LEFT JOIN ms_web_brandinfo b ON r.BrandId = b.Id " +
                             " LEFT JOIN ms_pc_cloudaccountinfo a ON a.Id = r.CloudId " +
-                            " WHERE UserId = ? " ;
+                            " WHERE UserId = ? AND r.DelFlag = 0 " ;
 
         return jdbcTemplate.query(sql, new Object[]{userId}, new RowMapper<Shop>() {
             @Override
@@ -100,6 +100,7 @@ public class ShopDaoImplByTemplate implements ShopDao {
                 shop.setBranchName(rs.getString("BranchName"));
                 shop.setBrandId(rs.getString("BrandId"));
                 shop.setBrandName(rs.getString("BrandName"));
+                shop.setCompanyId(rs.getString("CompanyId"));
                 shop.setAuditStatus(rs.getInt("AuditStatus"));
                 shop.setStartTime(rs.getString("StartTime"));
                 shop.setEndTime(rs.getString("EndTime"));

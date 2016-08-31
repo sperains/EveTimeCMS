@@ -63,6 +63,7 @@ public class ChartServiceImpl implements ChartService{
             return result ;
         }
 
+        //根据userId查询品牌信息
         Brand brand = brandDao.queryByUserId(user.getId());
         double todaySale = 0;
         try {

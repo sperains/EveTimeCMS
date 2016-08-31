@@ -10,6 +10,14 @@ import java.util.List;
  */
 public interface BranchDao {
 
+    /**
+     * 查询分店相关信息
+     * cloudId
+     * 分店名称
+     *
+     * @param userId
+     * @return
+     */
     List<Branch> queryByUserId(String userId);
 
 }
