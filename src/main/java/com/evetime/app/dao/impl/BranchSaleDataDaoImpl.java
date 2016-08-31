@@ -66,7 +66,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public double queryTodayAverageCost(String cloudId) {
 
-        String sql =  "SELECT ROUND(IFNULL(SUM(a.PayMoney)/IFNULL(SUM(b.PeopleCount),0),0)) FROM ms_pc_orderpayinfo a " +
+        String sql =  "SELECT ROUND(IFNULL(SUM(if(a.PayTypeId = 1 , a.PayMoney - b.CashChange  , a.PayMoney))/IFNULL(SUM(b.PeopleCount),0),0)) FROM ms_pc_orderpayinfo a " +
                             "JOIN ms_pc_orderinfo b " +
                             "ON a.OrderId = b.Id " +
                             "WHERE a.CloudId = ? " +
@@ -78,7 +78,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public double queryYesterDayAverageCost(String cloudId) {
 
-        String sql =  "SELECT ROUND(IFNULL(SUM(a.PayMoney)/IFNULL(SUM(b.PeopleCount),0),0)) FROM ms_pc_orderpayinfo a " +
+        String sql =  "SELECT ROUND(IFNULL(SUM(if(a.PayTypeId = 1 , a.PayMoney - b.CashChange  , a.PayMoney))/IFNULL(SUM(b.PeopleCount),0),0)) FROM ms_pc_orderpayinfo a " +
                 "JOIN ms_pc_orderinfo b " +
                 "ON a.OrderId = b.Id " +
                 "WHERE a.CloudId = ? " +
@@ -125,7 +125,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public List<Map<String, Object>> queryWeekSale(String cloudId) {
 
-        String sql =  " SELECT SUM(a.PayMoney) sale ,DATE_FORMAT(b.OrderTime,'%m-%d') date FROM ms_pc_orderpayinfo a " +
+        String sql =  " SELECT SUM(if(a.PayTypeId = 1 , a.PayMoney - b.CashChange  , a.PayMoney)) sale ,DATE_FORMAT(b.OrderTime,'%m-%d') date FROM ms_pc_orderpayinfo a " +
                             " JOIN ms_pc_orderinfo b " +
                             " ON a.OrderId = b.Id AND b.OrderStatusId = 1 " +
                             " WHERE a.CloudId = ? " +
@@ -182,7 +182,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public List<Map<String, Object>> queryCurWeekSale(String cloudId) {
 
-        String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
+        String sql =  " SELECT sum(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                             " JOIN ms_pc_orderpayinfo b " +
                             " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                             " WHERE a.CloudId = ? " +
@@ -202,7 +202,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public List<Map<String, Object>> queryCurMonthSale(String cloudId) {
 
-        String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
+        String sql =  " SELECT sum(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
                 " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +
@@ -222,7 +222,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public List<Map<String, Object>> queryCurYearSale(String cloudId) {
 
-        String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m')  date from ms_pc_orderinfo a " +
+        String sql =  " SELECT sum(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime , '%m')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
                 " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +
@@ -242,7 +242,7 @@ public class BranchSaleDataDaoImpl implements BranchSaleDataDao {
     @Override
     public List<Map<String, Object>> queryMonthSale(String cloudId, int month) {
 
-        String sql =  " SELECT sum(b.PayMoney) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
+        String sql =  " SELECT sum(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime , '%m-%d')  date from ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b " +
                 " ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE a.CloudId = ? " +

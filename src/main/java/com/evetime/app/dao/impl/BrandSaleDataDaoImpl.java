@@ -26,7 +26,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
     @Override
     public List<Map<String, Object>> querySaleOfWeek(String userId) {
 
-        String sql =  " SELECT SUM(b.PayMoney) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " AND TO_DAYS(NOW()) - TO_DAYS(a.OrderTime) < 7 " +
                 " WHERE a.CloudId IN (SELECT CloudId FROM ms_web_companyuserrole  WHERE UserId= ? ) " +
@@ -45,7 +45,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
     @Override
     public List<Map<String, Object>> queryCurWeekSale(String userId) {
 
-        String sql =  " SELECT SUM(b.PayMoney) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " AND WEEK(OrderTime , 1) = WEEK(NOW(),  1) " +
                 " WHERE a.CloudId IN (SELECT CloudId FROM ms_web_companyuserrole  WHERE UserId= ? ) " +
@@ -64,7 +64,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
     @Override
     public List<Map<String, Object>> queryCurMonthSale(String userId) {
 
-        String sql =  " SELECT SUM(b.PayMoney) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " AND MONTH(OrderTime) = MONTH(NOW() ) " +
                 " WHERE a.CloudId IN (SELECT CloudId FROM ms_web_companyuserrole  WHERE UserId= ? ) " +
@@ -82,7 +82,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
 
     @Override
     public List<Map<String, Object>> queryCurYearSale(String userId) {
-        String sql =  " SELECT SUM(b.PayMoney) sale , DATE_FORMAT(a.OrderTime,'%m') date FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime,'%m') date FROM ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " AND YEAR (OrderTime) = YEAR (NOW() ) " +
                 " WHERE a.CloudId IN (SELECT CloudId FROM ms_web_companyuserrole  WHERE UserId= ? ) " +
@@ -100,7 +100,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
 
     @Override
     public List<Map<String, Object>> queryMonthSale(String userId, int month) {
-        String sql =  " SELECT SUM(b.PayMoney) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale , DATE_FORMAT(a.OrderTime,'%m-%d') date FROM ms_pc_orderinfo a " +
                 " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " AND MONTH(a.OrderTime) = ? AND YEAR(a.OrderTime) = YEAR(NOW()) " +
                 " WHERE a.CloudId IN (SELECT CloudId FROM ms_web_companyuserrole  WHERE UserId= ? ) " +
@@ -122,7 +122,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
         String sql =  " SELECT a.CloudId , a.BranchName , m.sale FROM ms_web_companyuserrole r " +
                             " JOIN ms_pc_restaurantinfo a ON r.CloudId = a.CloudId " +
                             " LEFT JOIN ( " +
-                            " SELECT a.CloudId , a.OrderTime , SUM(b.PayMoney) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
+                            " SELECT a.CloudId , a.OrderTime , SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                             " WHERE WEEK(a.OrderTime,1 ) = WEEK(NOW(), 1 ) " +
                             " GROUP BY a.CloudId " +
                             " ) m ON r.CloudId = m.CloudId " +
@@ -145,7 +145,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
         String sql =  " SELECT a.CloudId , a.BranchName , m.sale FROM ms_web_companyuserrole r " +
                 " JOIN ms_pc_restaurantinfo a ON r.CloudId = a.CloudId " +
                 " LEFT JOIN ( " +
-                " SELECT a.CloudId , a.OrderTime , SUM(b.PayMoney) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
+                " SELECT a.CloudId , a.OrderTime , SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE MONTH (a.OrderTime ) = MONTH (NOW()) " +
                 " GROUP BY a.CloudId " +
                 " ) m ON r.CloudId = m.CloudId " +
@@ -168,7 +168,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
         String sql =  " SELECT a.CloudId , a.BranchName , m.sale FROM ms_web_companyuserrole r " +
                 " JOIN ms_pc_restaurantinfo a ON r.CloudId = a.CloudId " +
                 " LEFT JOIN ( " +
-                " SELECT a.CloudId , a.OrderTime , SUM(b.PayMoney) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
+                " SELECT a.CloudId , a.OrderTime , SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE YEAR (a.OrderTime) = YEAR (NOW()) " +
                 " GROUP BY a.CloudId " +
                 " ) m ON r.CloudId = m.CloudId " +
@@ -192,7 +192,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
         String sql =  " SELECT a.CloudId , a.BranchName , m.sale FROM ms_web_companyuserrole r " +
                 " JOIN ms_pc_restaurantinfo a ON r.CloudId = a.CloudId " +
                 " LEFT JOIN ( " +
-                " SELECT a.CloudId , a.OrderTime , SUM(b.PayMoney) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
+                " SELECT a.CloudId , a.OrderTime , SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sale FROM ms_pc_orderinfo a JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId AND a.OrderStatusId = 1 " +
                 " WHERE MONTH (a.OrderTime ) = ? AND YEAR(a.OrderTime) = YEAR(now()) " +
                 " GROUP BY a.CloudId " +
                 " ) m ON r.CloudId = m.CloudId " +
@@ -213,7 +213,7 @@ public class BrandSaleDataDaoImpl implements BrandSaleDateDao {
     @Override
     public double queryCurDaySale(String userId) {
 
-        String sql =  " SELECT IFNULL(SUM(b.PayMoney), 0 ) todaySale FROM ms_pc_orderinfo a " +
+        String sql =  " SELECT IFNULL(SUM( if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)  ), 0 ) todaySale FROM ms_pc_orderinfo a " +
                             " JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId " +
                             " AND a.OrderStatusId = 1 " +
                             " AND TO_DAYS(NOW()) - TO_DAYS(a.OrderTime) = 0 " +

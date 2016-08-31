@@ -3,7 +3,6 @@ package com.evetime.cms.dao.impl;
 import com.evetime.cms.dao.ShopDao;
 import com.evetime.cms.entity.Shop;
 import com.evetime.cms.entity.ShopType;
-import com.evetime.cms.util.UUIDGenerator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;

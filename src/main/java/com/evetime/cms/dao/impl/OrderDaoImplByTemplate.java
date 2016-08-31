@@ -65,7 +65,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
 
     public PayOrder findPayOrderByOrderNo(String orderNo) {
 
-        String sql = "SELECT a.OrderNum , b.PayDate , b.PayTypeName  , b.PayMoney  , b.Id " +
+        String sql = "SELECT a.OrderNum , b.PayDate , b.PayTypeName  , if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney) b.PayMoney  , b.Id " +
                 "FROM ms_pc_orderinfo a , ms_pc_orderpayinfo b WHERE a.Id = b.OrderId " +
                 "AND a.OrderNum = ? " ;
         try {
@@ -81,7 +81,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
         /*String sql = "SELECT SUM(m.PayMoney) sum ,DATE_FORMAT(m.PayDate,'%y-%m-%d') as dayTime from ms_pc_orderpayinfo m " +
                          "WHERE DATE_FORMAT(m.PayDate,'%Y-%m-%d') >= ? AND  DATE_FORMAT(m.PayDate,'%Y-%m-%d') <= ?  AND m.CloudId = ? " +
                          "GROUP BY dayTime";*/
-        String sql =  " select SUM(b.PayMoney) sum ,DATE_FORMAT(a.OrderTime,'%y-%m-%d') dayTime from ms_pc_orderinfo a " +
+        String sql =  " select SUM(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) sum ,DATE_FORMAT(a.OrderTime,'%y-%m-%d') dayTime from ms_pc_orderinfo a " +
                             " JOIN ms_pc_orderpayinfo b " +
                             " on a.Id = b.OrderId AND a.OrderStatusId = 1  " +
                             " WHERE DATE_FORMAT(a.OrderTime,'%Y-%m-%d') >= ? AND  DATE_FORMAT(a.OrderTime,'%Y-%m-%d') <= ? " +
@@ -102,7 +102,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
     @Override
     public List<Map<String, String>> findMonthAmountAmount(String year , String cloudId) {
 
-        String sql  = "SELECT SUM(m.PayMoney) sum,DATE_FORMAT(o.OrderTime,'%m') as month from ms_pc_orderpayinfo m " +
+        String sql  = "SELECT SUM(if(m.PayTypeId = 1 , m.PayMoney - o.CashChange  , m.PayMoney)) sum,DATE_FORMAT(o.OrderTime,'%m') as month from ms_pc_orderpayinfo m " +
                             " JOIN ms_pc_orderinfo o ON o.Id = m.OrderId AND o.OrderStatusId = 1 " +
                             " WHERE DATE_FORMAT(o.OrderTime,'%Y')= ? " +
                             " AND o.CloudId = ?  "  +
@@ -147,8 +147,10 @@ public class OrderDaoImplByTemplate implements OrderDao {
     public List<Map<String, Object>> findAccountInfo(String month) {
 
         String sql = "SELECT a.CloudId ,b.RestaurantName , b.BranchName  ,sum(if(a.PayTypeId IN (4) ,a.PayMoney , 0)) aliPay ," +
-                "sum(if(a.PayTypeId = 5 ,a.PayMoney , 0)) wechatPay  FROM ms_pc_orderpayinfo a " +
-                "RIGHT JOIN ms_pc_restaurantinfo b ON a.CloudId = b.CloudId "  ;
+                " sum(if(a.PayTypeId = 5 ,a.PayMoney , 0)) wechatPay ," +
+                " sum(if(a.PayTypeId = 1 ,a.PayMoney , 0)) cashPay " +
+                " FROM ms_pc_orderpayinfo a " +
+                " RIGHT JOIN ms_pc_restaurantinfo b ON a.CloudId = b.CloudId "  ;
             if(month !=null && !"".equals(month)){
                 sql +=  "WHERE DATE_FORMAT( a.PayDate ,'%m') = '" + month + "'" ;
             }
@@ -164,6 +166,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                 map.put("branchName" , rs.getString("BranchName"));
                 map.put("aliPay" , rs.getDouble("aliPay")) ;
                 map.put("wechatPay" , rs.getDouble("wechatPay"));
+                map.put("cashPay" , rs.getDouble("cashPay"));
                 return map;
             }
         });
@@ -180,11 +183,12 @@ public class OrderDaoImplByTemplate implements OrderDao {
                 " WHERE a.CompanyId =  ? " +
                 "GROUP BY a.CloudId";*/
 
-        String sql =  " select a.CloudId , a.RestaurantName , a.BranchName , m.aliPay , m.wechatPay " +
+        String sql =  " select a.CloudId , a.RestaurantName , a.BranchName , m.aliPay , m.wechatPay , m.cashPay " +
                             " from ms_web_companyuserrole c " +
                             " JOIN ms_pc_restaurantinfo a ON c.CloudId = a.CloudId " +
                             " LEFT JOIN ( " +
-                            " select o.CloudId ,sum(if(p.PayTypeId IN (4) ,p.PayMoney , 0)) aliPay , sum(if(p.PayTypeId = 5 ,p.PayMoney , 0)) wechatPay from ms_pc_orderinfo o " +
+                            " select o.CloudId ,sum(if(p.PayTypeId = 4 ,p.PayMoney , 0)) aliPay , sum(if(p.PayTypeId = 5 ,p.PayMoney , 0)) wechatPay , " +
+                            " sum(if(p.PayTypeId = 1 ,p.PayMoney - o.CashChange  , 0)) cashPay from ms_pc_orderinfo o " +
                             " JOIN ms_pc_orderpayinfo p ON o.Id = p.OrderId " +
                             " WHERE o.OrderStatusId = 1 AND MONTH(o.OrderTime) = ? " +
                             " GROUP BY o.CloudId " +
@@ -200,6 +204,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
                 map.put("branchName" , rs.getString("BranchName"));
                 map.put("aliPay" , rs.getDouble("aliPay")) ;
                 map.put("wechatPay" , rs.getDouble("wechatPay"));
+                map.put("cashPay" , rs.getDouble("cashPay"));
                 return map;
             }
         });
@@ -284,7 +289,7 @@ public class OrderDaoImplByTemplate implements OrderDao {
     @Override
     public List<Map<String, Object>> findAvgCost(String cloudId) {
 
-        String sql = " SELECT sum(a.PayMoney) sum, sum(b.PeopleCount) count ,ROUND(sum(a.PayMoney)/sum(b.PeopleCount)) avg ,DATE_FORMAT(b.OrderTime,'%y-%m') month from ms_pc_orderpayinfo  a " +
+        String sql = " SELECT sum(if(a.PayTypeId = 1 , a.PayMoney - b.CashChange  , a.PayMoney)) sum, sum(b.PeopleCount) count ,ROUND(sum(if(a.PayTypeId = 1 , a.PayMoney - b.CashChange  , a.PayMoney))/sum(b.PeopleCount)) avg ,DATE_FORMAT(b.OrderTime,'%y-%m') month from ms_pc_orderpayinfo  a " +
                           " JOIN ms_pc_orderinfo b ON b.Id = a.OrderId " +
                           " WHERE a.CloudId = ? AND b.OrderStatusId = 1 " +
                           " GROUP BY DATE_FORMAT(b.OrderTime , '%y-%m') " ;

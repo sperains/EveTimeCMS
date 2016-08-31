@@ -31,7 +31,7 @@ public class BranchDaoImpl implements BranchDao{
                             " JOIN ms_cms_user u ON r.UserId = u.Id " +
                             " WHERE u.id = ? ) m " +
                             " LEFT JOIN ( " +
-                            " SELECT sum(b.PayMoney) todaySale, a.CloudId " +
+                            " SELECT sum(if(b.PayTypeId = 1 , b.PayMoney - a.CashChange  , b.PayMoney)) todaySale, a.CloudId " +
                             " FROM ms_pc_orderinfo a " +
                             " LEFT JOIN ms_pc_orderpayinfo b ON a.Id = b.OrderId " +
                             " WHERE a.OrderStatusId = 1 " +
